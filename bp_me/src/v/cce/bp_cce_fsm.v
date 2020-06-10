@@ -180,6 +180,7 @@ module bp_cce_fsm
   logic [lg_lce_assoc_lp-1:0] gad_req_addr_way_lo;
   logic [lce_id_width_p-1:0] gad_owner_lce_lo;
   logic [lg_lce_assoc_lp-1:0] gad_owner_lce_way_lo;
+  bp_coh_states_e gad_owner_coh_state_lo;
   logic gad_replacement_flag_lo;
   logic gad_upgrade_flag_lo;
   logic gad_cached_shared_flag_lo;
@@ -241,6 +242,7 @@ module bp_cce_fsm
       ,.req_addr_way_o(gad_req_addr_way_lo)
       ,.owner_lce_o(gad_owner_lce_lo)
       ,.owner_way_o(gad_owner_lce_way_lo)
+      ,.owner_coh_state_o(gad_owner_coh_state_lo)
       ,.replacement_flag_o(gad_replacement_flag_lo)
       ,.upgrade_flag_o(gad_upgrade_flag_lo)
       ,.cached_shared_flag_o(gad_cached_shared_flag_lo)
@@ -989,6 +991,7 @@ module bp_cce_fsm
 
           mshr_n.owner_lce_id = gad_owner_lce_lo;
           mshr_n.owner_way_id = gad_owner_lce_way_lo;
+          mshr_n.owner_coh_state = gad_owner_coh_state_lo;
 
           mshr_n.next_coh_state =
             (mshr_r.flags[e_opd_rqf])
@@ -1222,7 +1225,7 @@ module bp_cce_fsm
           lce_cmd.header.addr = mshr_r.paddr;
           lce_cmd.header.target = mshr_r.lce_id;
           lce_cmd.header.target_way_id = mshr_r.lru_way_id;
-          lce_cmd.header.state = mshr_r.next_coh_state;
+          lce_cmd.header.target_state = mshr_r.next_coh_state;
 
           state_n = (lce_cmd_ready_i) ? TRANSFER_WB_CMD : TRANSFER_CMD;
         end
