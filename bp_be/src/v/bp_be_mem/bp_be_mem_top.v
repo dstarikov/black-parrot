@@ -54,6 +54,8 @@ module bp_be_mem_top
    , input [cfg_bus_width_lp-1:0]            cfg_bus_i
    , output [dword_width_p-1:0]              cfg_csr_data_o
    , output [1:0]                            cfg_priv_data_o
+   , output [7:0]                            cfg_domain_data_o
+   , output                                  cfg_sac_data_o
 
    , input [mmu_cmd_width_lp-1:0]            mmu_cmd_i
    , input                                   mmu_cmd_v_i
@@ -317,13 +319,25 @@ bp_tlb
    ,.entry_o(dtlb_r_entry)
   );
 
+logic [7:0] domain_data;
+logic sac_data;
+
+assign cfg_domain_data_o = domain_data;
+assign cfg_sac_data_o = sac_data;
+
 bp_pma
  #(.bp_params_p(bp_params_p))
  pma
-  (.ptag_v_i(dtlb_r_v_lo)
+  (.clk_i(clk_i)
+   ,.reset_i(reset_i)
+   ,.cfg_bus_i(cfg_bus_i)
+
+   ,.ptag_v_i(dtlb_r_v_lo)
    ,.ptag_i(dtlb_r_entry.ptag)
 
    ,.uncached_o(dcache_uncached)
+   ,.domain_data_o(domain_data)
+   ,.sac_data_o(sac_data)
    );
 
 bp_be_ptw
@@ -482,12 +496,12 @@ end
 // Fault if in uncached mode but access is not for an uncached address
 wire is_uncached_mode = (cfg_bus.dcache_mode == e_lce_mode_uncached);
 wire mode_fault_v = (is_uncached_mode & ~dcache_uncached);
-  // TODO: Enable other domains by setting enabled dids with cfg_bus
-wire did_fault_v = (dcache_ptag[ptag_width_p-1-:io_noc_did_width_p] != '0) &
-                   ~((dcache_ptag[ptag_width_p-1-:io_noc_did_width_p] == 1) & sac_x_dim_p > 0);
 
-assign load_access_fault_v  = load_op_tl_lo & (mode_fault_v | did_fault_v);
-assign store_access_fault_v = store_op_tl_lo & (mode_fault_v | did_fault_v);
+wire did_fault_v = (domain_data[dcache_ptag[ptag_width_p-1-:io_noc_did_width_p]] != 1'b1);
+wire sac_fault_v = ((dcache_ptag[ptag_width_p-1-:(io_noc_did_width_p+1)] == 1) & ~sac_data);
+
+assign load_access_fault_v  = load_op_tl_lo & (mode_fault_v | did_fault_v | sac_fault_v);
+assign store_access_fault_v = store_op_tl_lo & (mode_fault_v | did_fault_v | sac_fault_v);
 
 // D-TLB connections
 assign dtlb_r_v     = dcache_cmd_v & ~fencei_cmd_v;
