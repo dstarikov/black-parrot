@@ -23,7 +23,6 @@ module bp_lce_req
     , parameter block_width_p = "inv"
     , parameter fill_width_p = block_width_p
 
-
     // maximum number of outstanding transactions
     , parameter credits_p = coh_noc_max_credits_p
 

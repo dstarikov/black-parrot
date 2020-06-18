@@ -25,6 +25,9 @@ module bp_lce_cmd
     , parameter sets_p = "inv"
     , parameter block_width_p = "inv"
     , parameter fill_width_p = block_width_p
+    , parameter data_mem_negedge_p = 0
+    , parameter tag_mem_negedge_p = 0
+    , parameter stat_mem_negedge_p = 0
 
     , parameter timeout_max_limit_p=4
 
@@ -171,17 +174,20 @@ module bp_lce_cmd
   // be valid on the data_mem_i port). The data will remain in the buffer until the next read
   // command is accepted and new data is latched.
   logic data_buf_en_r;
-  always_ff @(posedge clk_i) begin
-    if (reset_i) begin
-      data_buf_en_r <= 1'b0;
-    end else begin
-      data_buf_en_r <= data_mem_pkt_yumi_i & (data_mem_pkt.opcode == e_cache_data_mem_read);
-    end
-  end
+  wire data_buf_read = data_mem_pkt_yumi_i & (data_mem_pkt.opcode == e_cache_data_mem_read);
+  wire data_mem_clk = (data_mem_negedge_p ? ~clk_i : clk_i);
+  bsg_dff
+   #(.width_p(1))
+   dirty_data_v_reg
+    (.clk_i(data_mem_clk)
+
+     ,.data_i(data_buf_read)
+     ,.data_o(data_buf_en_r)
+     );
 
   logic [cce_block_width_p-1:0] data_buf_r;
   bsg_dff_en_bypass
-    #(.width_p(cce_block_width_p))
+    #(.width_p(block_width_p))
     data_buf_reg
      (.clk_i(clk_i)
       ,.en_i(data_buf_en_r)
