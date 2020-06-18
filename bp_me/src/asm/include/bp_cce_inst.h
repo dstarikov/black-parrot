@@ -362,7 +362,7 @@ typedef enum {
   ,e_mux_sel_way_mshr_req                = 0x8
   ,e_mux_sel_way_mshr_owner              = 0x9
   ,e_mux_sel_way_mshr_lru                = 0xA
-  ,e_mux_sel_way_sh_way                  = 0xC // Sharer's vector ways, indexed by src_a
+  ,e_mux_sel_way_sh_way                  = 0xB // Sharer's vector ways, indexed by src_a
   ,e_mux_sel_way_0                       = 0xF // constant 0
 } bp_cce_inst_mux_sel_way_e;
 
@@ -382,7 +382,7 @@ typedef enum {
   ,e_mux_sel_coh_next_coh_state          = 0x8
   ,e_mux_sel_coh_lru_coh_state           = 0x9
   ,e_mux_sel_sharer_state                = 0xA // Sharer's vector states, indexed by src_a
-  ,e_mux_sel_coh_owner_coh_state         = 0x9
+  ,e_mux_sel_coh_owner_coh_state         = 0xB
   ,e_mux_sel_coh_inst_imm                = 0xF
 } bp_cce_inst_mux_sel_coh_state_e;
 
