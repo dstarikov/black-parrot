@@ -201,7 +201,7 @@ module bp_be_dcache_wbuf
     ,.data_o(bypass_data_n)
   );
 
-  always_ff @ (posedge clk_i) begin
+  always_ff @ (negedge clk_i) begin
     if (reset_i) begin
       bypass_mask_o <= '0;
       bypass_data_o <= '0;
